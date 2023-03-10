@@ -43,7 +43,7 @@ const APIs = (() => {
         }).then((res) => res.json());
     };
 
-    const moveTodo = (id, updatedTodo) => {
+    const updateTodo = (id, updatedTodo) => {
         return fetch("http://localhost:3000/todos/" + id, {
             method: "PATCH",
             body: JSON.stringify(updatedTodo),
@@ -54,7 +54,7 @@ const APIs = (() => {
     const getTodos = () => {
         return fetch("http://localhost:3000/todos").then((res) => res.json());
     };
-    return { createTodo, deleteTodo, getTodos, moveTodo };
+    return { createTodo, deleteTodo, getTodos, updateTodo };
 })();
 
 //IIFE
@@ -87,13 +87,13 @@ const Model = (() => {
             this.#onChange = callback;
         }
     }
-    const { getTodos, createTodo, deleteTodo, moveTodo } = APIs;
+    const { getTodos, createTodo, deleteTodo, updateTodo } = APIs;
     return {
         State,
         getTodos,
         createTodo,
         deleteTodo,
-        moveTodo,
+        updateTodo,
     };
 })();
 /* 
@@ -197,13 +197,23 @@ const Controller = ((view, model) => {
                 });
             }
         });
+
+        view.todoListCompleteEl.addEventListener("click", (event) => {
+            if (event.target.className === "delete-btn") {
+                const id = event.target.id;
+                console.log("id", typeof id);
+                model.deleteTodo(+id).then((data) => {
+                    state.todos = state.todos.filter((todo) => todo.id !== +id);
+                });
+            }
+        });
     };
 
     const handleMove = () => {
         view.todolistEl.addEventListener("click", (event) => {
             if(event.target.className === "move-btn"){
                 const id = event.target.id;
-                model.moveTodo(+id,{complete: true}).then((data) => {
+                model.updateTodo(+id,{complete: true}).then((data) => {
                     state.todos.forEach((todo) => {
                         if(+todo.id === +id){
                             todo.complete = true;
@@ -216,7 +226,7 @@ const Controller = ((view, model) => {
         view.todoListCompleteEl.addEventListener("click", (event) => {
             if(event.target.className === "move-btn"){
                 const id = event.target.id;
-                model.moveTodo(+id,{complete: false}).then((data) => {
+                model.updateTodo(+id,{complete: false}).then((data) => {
                     state.todos.forEach((todo) => {
                         if(+todo.id === +id){
                             todo.complete = false;
@@ -226,6 +236,10 @@ const Controller = ((view, model) => {
                 });
             }
         })
+    }
+
+    const handleEdit = () => {
+
     }
 
     const bootstrap = () => {
